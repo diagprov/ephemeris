@@ -20,9 +20,16 @@ pub const EPHEMERIS_DIRNAME : &'static str = ".ephemeris";
 
 const EPH_PROJECTNAME : &'static str = "projects.toml";
 
+pub type ProjectRef = Rc<Box<Project>>;
+
+pub struct TagTree {
+    subtags : BTreeMap<String, Option<TagTree>>,
+    refs: Vec<ProjectRef>
+}
+
 pub struct State {
-    pub projects : BTreeMap<String, Rc<Box<Project>>>,
-    pub tagmap : BTreeMap<String, Vec<Rc<Box<Project>>>>,
+    pub projects : BTreeMap<String, ProjectRef>,
+    pub tagmap : BTreeMap<String, Vec<ProjectRef>>,
 }
 
 
