@@ -26,7 +26,7 @@ pub struct ProjectList {
 impl Project {
 
     fn validate_code(code: &String) -> bool {
-        let re = Regex::new(r"^[A-Za-z0-9]+$").unwrap();
+        let re = Regex::new(r"^[A-Za-z0-9-_]+$").unwrap();
         re.is_match(code)
     }
 

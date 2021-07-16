@@ -1,6 +1,7 @@
 [workspace]
 
 members = ["ephemeris-cmd",
+           "ephemeris-gtk",
            "ephemeris-lib"]
 
 [profile.release]

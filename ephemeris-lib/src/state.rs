@@ -201,7 +201,7 @@ impl State {
         let state = Box::new(State{projects: projectmap, tagmap: tagmap, tasks: tasks.clone()});
         /*for t in &state.tasks {
             let mut taskref = t.borrow_mut();
-            taskref.set_due(); 
+            taskref.generate_hash();
         }*/
         Ok(state)
     }

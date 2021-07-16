@@ -1,6 +1,8 @@
 
+extern crate bs58;
 extern crate chrono;
 extern crate dirs;
+extern crate getrandom;
 extern crate regex;
 extern crate serde_derive;
 extern crate toml;

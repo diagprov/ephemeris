@@ -70,6 +70,9 @@ pub enum ProjectSubCommand {
 pub enum TaskSubCommand {
     List(TaskList),
     Add(TaskAdd),
+    Show(TaskShow),
+    /// Generate a hash shortcode for editing files by hand.
+    Hash,
     //Remove(TaskRemove),
 }
 
@@ -136,6 +139,14 @@ pub struct TaskAdd {
     tags: Option<Vec<String>>,
     #[clap(short, long)]
     due: Option<String>,
+}
+
+/// Show a given task
+#[derive(Clap)]
+#[clap(name = "task")]
+#[clap(setting = AppSettings::ColoredHelp)]
+pub struct TaskShow {
+    hash: String,
 }
 
 fn main() {

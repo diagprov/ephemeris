@@ -1,15 +1,18 @@
 
-use crate::{Task, TaskSubCommand};
-use crate::tags::*;
+use std::cell::Ref;
 use prettytable::{Table, row, cell};
 use prettytable::format;
 use ephemeris::state::State;
-use ephemeris::tasks::TaskDue;
+use ephemeris::tasks::{Task, TaskDue};
+use crate::{TaskSubCommand};
+use crate::tags::*;
 
 fn list_tasks(state: &mut Box<State>, tagfilter: &Option<String>) {
     
     let mut table = Table::new();
-    table.set_titles(row!["Deadline", "Name", "Project", "Tags"]);
+    table.set_titles(row![bF->"Hash", 
+        bF->"Deadline", bF->"S", bF->"Name", 
+        bF->"Project", bF->"Tags"]);
     
     table.set_format(*format::consts::FORMAT_BOX_CHARS);
     for taski in &state.tasks {
@@ -49,20 +52,78 @@ fn list_tasks(state: &mut Box<State>, tagfilter: &Option<String>) {
                 }
             },
             None => String::from(""),
-        }; 
-        table.add_row(row![due_string, task.name, projectname, tagstr]);
+        };
+        let status = match task.done {
+            true => String::from("✓"),
+            false => String::from("𐄂"),
+        };
+        table.add_row(row![task.hash, due_string, status, task.name, projectname, tagstr]);
    
         
     }
 
     table.print_tty(true);
 }
-/*
+
+fn display_task_inner(state: &Box<State>, task: Ref<Task>, _code: &String) {
+    let projectname = match &task.projectcode {
+            Some(pc) => {
+                match &state.projects.get(pc) {
+                Some(proj) => String::from(&proj.borrow().name),
+                None => String::from("Unknown project code."),
+                }
+            },
+            None => String::from(""),
+        };
+    let due_string = match &task.due {
+        Some(d) => {
+            match d {
+            TaskDue::Day(date) => {
+                date.format("%Y-%m-%d").to_string() 
+            },
+            TaskDue::Time(_dt) => {
+                String::from("Unhandled")
+            },
+            }
+        },
+        None => String::from("Not set"),
+        };
+    let status = match task.done {
+        true => String::from("✓"),
+        false => String::from("𐄂"),
+    };
+    let tagstr : String = match &task.tags {
+        Some(tv) => {
+            tag_to_string(&tv)                   
+        },
+        None => String::from(""),
+        };
+
+    let mut table = Table::new();
+    table.set_format(*format::consts::FORMAT_BOX_CHARS);
+    table.add_row(row!["Name", &task.name]);
+    table.add_row(row!["Project", projectname]);
+    table.add_row(row!["Due", due_string]);
+    table.add_row(row!["Done", status]);
+    table.add_row(row!["Tags", tagstr]);
+    table.add_row(row!["Hash", &task.hash]);
+
+    table.print_tty(true);
+}
+
 fn display_task(state: &mut Box<State>, code: &String) {
 
+    for t in &state.tasks {
+        let ti = t.borrow();
+        if &ti.hash == code {
+            let task : Ref<Task> = ti;
+            display_task_inner(&state, task, code);
+            break;
+        }
+    }
 }
-*/
-pub fn cmd_tasks(state: &mut Box<State>, cmd: &Task) {
+
+pub fn cmd_tasks(state: &mut Box<State>, cmd: &crate::Task) {
     match &cmd.subcmd {
         TaskSubCommand::List(c) => {
             list_tasks(state, &c.tag);
@@ -82,6 +143,15 @@ pub fn cmd_tasks(state: &mut Box<State>, cmd: &Task) {
             //list_projects(state, &None);
             //state.save().unwrap();
         },
+        TaskSubCommand::Show(c) => {
+            display_task(state, &c.hash);         
+        },
+        TaskSubCommand::Hash => {
+            match Task::genhashcode() {
+            Ok(hc) => println!("{}", hc),
+            Err(e) => println!("Error: {:?}", e),
+            }
+        }
         //_ => (),
     };
 }
