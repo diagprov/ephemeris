@@ -1,13 +1,22 @@
 
+extern crate clap;
 extern crate ephemeris;
+extern crate rustyline;
 // simplest method of use, but sacrifices some flexibility.
 use clap::{AppSettings, Clap};
+use ephemeris::state::State;
 
 mod projects;
-use crate::projects::*;
+mod repl;
+mod tags;
+mod tasks;
 
-/// This doc string acts as a help message when the user runs '--help'
-/// as do all doc strings on fields
+
+use crate::projects::*;
+use crate::tasks::*;
+use crate::repl::*;
+
+/// Ephemeris is a Task and Simple Project Management utility 
 #[derive(Clap)]
 #[clap(name="Ephemeris", version = "1.0", author = "Antony Vennard <antony@vennard.ch>")]
 #[clap(setting = AppSettings::ColoredHelp)]
@@ -20,21 +29,32 @@ struct EphemerisArgs {
 enum SubCommand {
     Project(Project),
     Task(Task),
+    Shell(Shell),
 }
 
+/// Invoke an interactive shell. 
+#[derive(Clap)]
+#[clap(name="Ephemeris Project Management", version = "1.0", author = "Antony Vennard <antony@vennard.ch>")]
+#[clap(setting = AppSettings::ColoredHelp)]
+pub struct Shell {
+}
+
+/// Modify or view Projects
 #[derive(Clap)]
 #[clap(name="Ephemeris Project Management", version = "1.0", author = "Antony Vennard <antony@vennard.ch>")]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct Project {
     #[clap(subcommand)]
-    subcmd: ProjectSubCommand,
+    pub subcmd: ProjectSubCommand,
 }
+
+/// Modify or view Tasks
 #[derive(Clap)]
 #[clap(name="Ephemeris Task Management", version = "1.0", author = "Antony Vennard <antony@vennard.ch>")]
 #[clap(setting = AppSettings::ColoredHelp)]
-struct Task {
+pub struct Task {
     #[clap(subcommand)]
-    subcmd: TaskSubCommand,
+    pub subcmd: TaskSubCommand,
 }
 
 
@@ -43,23 +63,39 @@ pub enum ProjectSubCommand {
     List(ProjectList),
     Add(ProjectAdd),
     Remove(ProjectRemove),
+    Show(ProjectShow),
 }
 
 #[derive(Clap)]
 pub enum TaskSubCommand {
-    List(ProjectList),
+    List(TaskList),
+    Add(TaskAdd),
+    //Remove(TaskRemove),
 }
 
 
+/// List Projects
 #[derive(Clap)]
 #[clap(name = "list")]
+#[clap(setting = AppSettings::ColoredHelp)]
 pub struct ProjectList {
     #[clap(long)]
     tag: Option<String>,
 }
 
+/// Show a given project
+#[derive(Clap)]
+#[clap(name = "project")]
+#[clap(setting = AppSettings::ColoredHelp)]
+pub struct ProjectShow {
+    code: String,
+}
+
+
+/// Add a new Project
 #[derive(Clap)]
 #[clap(name = "add")]
+#[clap(setting = AppSettings::ColoredHelp)]
 pub struct ProjectAdd {
     #[clap(short, long)]
     code: String,
@@ -69,19 +105,47 @@ pub struct ProjectAdd {
     tags: Option<Vec<String>>,
 }
 
+/// Remove a Project
 #[derive(Clap)]
-#[clap(name = "list")]
+#[clap(name = "remove")]
+#[clap(setting = AppSettings::ColoredHelp)]
 pub struct ProjectRemove {
     #[clap(short, long)]
     code: String,
 }
+
+/// List Tasks
+#[derive(Clap)]
+#[clap(name = "list")]
+#[clap(setting = AppSettings::ColoredHelp)]
+pub struct TaskList {
+    #[clap(long)]
+    tag: Option<String>,
+}
+
+/// Add a new Task
+#[derive(Clap)]
+#[clap(name = "list")]
+#[clap(setting = AppSettings::ColoredHelp)]
+pub struct TaskAdd {
+    #[clap(short, long)]
+    projectcode: Option<String>,
+    #[clap(short, long)]
+    name: String,
+    #[clap(short, long)]
+    tags: Option<Vec<String>>,
+    #[clap(short, long)]
+    due: Option<String>,
+}
+
 fn main() {
 
     let args = EphemerisArgs::parse();
-    let mut state : Box<ephemeris::State> = ephemeris::State::load().unwrap();
+    let mut state : Box<State> = State::load().unwrap();
 
     match args.subcmd {
         SubCommand::Project(p) => cmd_project(&mut state, &p),
-        SubCommand::Task(p) => println!("Task"),
+        SubCommand::Task(p) => cmd_tasks(&mut state, &p),
+        SubCommand::Shell(_) => repl(&mut state),
     };
 }

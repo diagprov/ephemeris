@@ -1,13 +1,18 @@
 
+use std::cell::RefCell;
+use std::rc::Rc;
 use regex::Regex;
-use serde;
 use serde_derive::{Serialize, Deserialize};
+
+pub type ProjectRef = Rc<RefCell<Project>>;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Project {
     pub code : String,
     pub name : String,
     pub tags : Option<Vec<String>>,
+    // FEATURE: do we support project nesting like this?
+    // pub projects: Option<Vec<ProjectRef>>,
 }
 
 
@@ -35,6 +40,7 @@ impl Project {
             code: code.clone(),
             name: name.clone(),
             tags: Some(tags.clone()),
+            //projects: None,
         })
     }
 

@@ -1,28 +1,18 @@
 
-use ephemeris;
-use prettytable::{Table, Row, Cell, row, cell};
+use ephemeris::state::State;
+use prettytable::{Table, row, cell};
+use prettytable::format;
 use crate::*;
+use crate::tags::*;
 
-
-#[inline(always)]
-fn tag_to_string(tlist: &Vec<String>) -> String {
-    let mut s : String = String::from("");
-    for t in tlist {
-        if &s == "" {
-            s = format!("{}", t);
-        } else {
-            s = format!("{}, {}", s, t);
-        }
-    }
-    s
-}
-
-fn list_projects(state: &mut Box<ephemeris::State>, tagfilter: &Option<String>) {
+fn list_projects(state: &mut Box<State>, tagfilter: &Option<String>) {
     let mut table = Table::new();
-    table.set_titles(row!["Code", "Name", "Tags"]);
-    for p in state.projects.values() {
-    
-        match(tagfilter) {
+    table.set_titles(row![bF->"Code", bF->"Name", bF->"Tags"]);
+   
+    table.set_format(*format::consts::FORMAT_BOX_CHARS);
+    for pi in state.projects.values() {
+        let p = pi.borrow();
+        match tagfilter {
         Some(t) => {
             let taglist = p.tags.as_ref().unwrap();
             if !taglist.contains(&t) { continue; }
@@ -36,12 +26,40 @@ fn list_projects(state: &mut Box<ephemeris::State>, tagfilter: &Option<String>) 
         None => String::from(""),
         };
         table.add_row(row![p.code, p.name, tagstr]);
+   
+        
     }
 
     table.print_tty(true);
 }
 
-pub fn cmd_project(state: &mut Box<ephemeris::State>, cmd: &crate::Project) {
+fn display_project(state: &mut Box<State>, code: &String) {
+
+
+    let project = match state.projects.get(code) {
+        Some(p) => p.borrow(),
+        None => {
+            println!("No project with code {}", code);
+            return;
+        },
+    };
+    let tagstr : String = match &project.tags {
+        Some(tv) => {
+            tag_to_string(&tv)                   
+        },
+        None => String::from(""),
+    };
+    
+
+    let mut table = Table::new();
+    table.set_format(*format::consts::FORMAT_BOX_CHARS);
+    table.add_row(row!["Code", &project.code]);
+    table.add_row(row!["Name", &project.name]);
+    table.add_row(row!["Tags", tagstr]);
+    table.print_tty(true);
+}
+
+pub fn cmd_project(state: &mut Box<State>, cmd: &crate::Project) {
 
     match &cmd.subcmd {
         ProjectSubCommand::List(c) => {
@@ -54,14 +72,17 @@ pub fn cmd_project(state: &mut Box<ephemeris::State>, cmd: &crate::Project) {
             println!("[*] Name: {}", c.name);
             println!("[*] Tags: {}", tag_to_string(&tags));
         
-            state.project_add(&c.code, &c.name, &c.tags);
+            state.project_add(&c.code, &c.name, &c.tags).unwrap();
             list_projects(state, &None);
-            state.save();
+            state.save().unwrap();
         },
         ProjectSubCommand::Remove(c) => {
-            state.project_remove(&c.code);
+            state.project_remove(&c.code).unwrap();
             list_projects(state, &None);
-            state.save();
+            state.save().unwrap();
         },
+        ProjectSubCommand::Show(c) => {
+            display_project(state, &c.code)
+        }
     }
 }
