@@ -7,14 +7,15 @@ use ephemeris::tasks::{Task, TaskDue};
 use crate::{TaskSubCommand};
 use crate::tags::*;
 
-fn list_tasks(state: &mut Box<State>, tagfilter: &Option<String>) {
+pub fn list_tasks(state: &mut Box<State>, tagfilter: &Option<String>) {
     
     let mut table = Table::new();
     table.set_titles(row![bF->"Hash", 
         bF->"Deadline", bF->"S", bF->"Name", 
         bF->"Project", bF->"Tags"]);
-    
-    table.set_format(*format::consts::FORMAT_BOX_CHARS);
+   
+    // https://docs.rs/prettytable-rs/0.8.0/prettytable/format/consts/index.html
+    table.set_format(*format::consts::FORMAT_CLEAN);//BOX_CHARS);
     for taski in &state.tasks {
         let task = taski.borrow();
         match tagfilter {

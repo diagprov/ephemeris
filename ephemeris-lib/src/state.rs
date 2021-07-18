@@ -19,6 +19,7 @@ use crate::tasks::*;
 pub struct State {
     pub projects : BTreeMap<String, ProjectRef>,
     pub tasks : Vec<TaskRef>,
+    pub taskmap : BTreeMap<String, Vec<TaskRef>>,
     pub tagmap : BTreeMap<String, Vec<ProjectRef>>,
 }
 
@@ -163,17 +164,6 @@ impl State {
         let mut tagmap : BTreeMap<String, Vec<ProjectRef>> = BTreeMap::new();
         for p in projects {
 
-            /*
-            FEATURE: nested project.
-            match &p.projects {
-                None => (),
-                Some(p) => {
-                    for subp in p {
-                        println!("Subproj: {}", subp.name);
-                    }
-                },
-            }*/
-
             let code = String::from(&p.code.clone());
             let prj = Rc::new(RefCell::new(p));
 
@@ -183,6 +173,7 @@ impl State {
                 None => continue,
             };
 
+            // TODO: put this into a rebuild function.
             for tag in tags {
                 if tagmap.contains_key(&tag) {
                     let v : &mut Vec<ProjectRef> = match tagmap.get_mut(&tag) {
@@ -209,9 +200,41 @@ impl State {
         };
         let tasks = match tasklist.task {
             Some(v) => v,
-            None => return Err(String::from("Unable to find project key in TOML file.")),
+            None => return Err(String::from("Unable to find task key in TOML file.")),
         };
-        let state = Box::new(State{projects: projectmap, tagmap: tagmap, tasks: tasks.clone()});
+
+        // TODO: this also belongs in a rebuild function.
+        let mut taskmap : BTreeMap<String, Vec<TaskRef>> = BTreeMap::new();
+        for t in &tasks {
+            let task = t.borrow();
+            let projectcode : String = match &task.projectcode {
+            Some(c) => c.clone(),
+            None => {
+                continue;
+            },
+            };
+            if !projectmap.contains_key(&projectcode) {
+                continue;
+            }
+
+            if taskmap.contains_key(&projectcode) {
+                let mut v : &mut Vec<TaskRef> = match taskmap.get_mut(&projectcode) {
+                    Some(v) => v,
+                    None => return Err(String::from("Error")),
+                };
+                v.push(t.clone());
+            } else {
+                let v : Vec<TaskRef> = vec![Rc::new(RefCell::new(task.clone()))];
+                taskmap.insert(String::from(&projectcode), v);
+            }
+        };
+        let state = Box::new(
+            State{projects: projectmap, 
+                  tagmap: tagmap, 
+                  tasks: tasks.clone(),
+                  taskmap: taskmap.clone(),
+            }
+        );
         /*for t in &state.tasks {
             let mut taskref = t.borrow_mut();
             taskref.generate_hash();

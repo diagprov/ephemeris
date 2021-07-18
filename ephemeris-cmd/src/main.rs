@@ -67,6 +67,7 @@ pub enum ProjectSubCommand {
     Add(ProjectAdd),
     Remove(ProjectRemove),
     Show(ProjectShow),
+    Tasks(ProjectTasks),
 }
 
 #[derive(Clap)]
@@ -91,6 +92,9 @@ pub enum TimeSubCommand {
 pub struct ProjectList {
     #[clap(long)]
     tag: Option<String>,
+    /// Display all projects, even those with no tasks assigned.
+    #[clap(long)]
+    withNoTasks : bool,
 }
 
 /// Show a given project
@@ -100,6 +104,15 @@ pub struct ProjectList {
 pub struct ProjectShow {
     code: String,
 }
+
+/// Show a given project
+#[derive(Clap)]
+#[clap(name = "project")]
+#[clap(setting = AppSettings::ColoredHelp)]
+pub struct ProjectTasks {
+    code: String,
+}
+
 
 
 /// Add a new Project
