@@ -142,6 +142,22 @@ pub fn cmd_tasks(state: &mut Box<State>, cmd: &crate::Task) {
             state.task_add(&c.name, &c.due, &projectcode, &c.tags).unwrap();
             //list_projects(state, &None);
             //state.save().unwrap();
+        }
+        TaskSubCommand::Remove(c) => {
+            match state.task_remove(&c.hash) {
+            Ok(_) => (),
+            Err(e) => {
+                eprintln!("Error occurred: {}", e);
+                return;
+            },
+            };
+            match state.save() {
+            Ok(_) => (),
+            Err(e) => {
+                eprintln!("Error occurred: {}", e);
+                return;
+            },
+            };
         },
         TaskSubCommand::Show(c) => {
             display_task(state, &c.hash);         

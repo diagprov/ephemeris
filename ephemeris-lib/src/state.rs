@@ -61,41 +61,54 @@ impl State {
         Ok(())
     }
 
-    /*pub fn project_remove(&mut self, code: &String) -> Result<(), String> {
+    pub fn task_remove(&mut self, code: &String) -> Result<(), String> {
         
-        if !self.projects.contains_key(code) {
-            return Err(String::from(format!("Code {} does not refer to a project.", code)));
+        let mut index : usize = 0;
+        let mut removed : bool = false;
+        for taskref in &mut self.tasks {
+            let task = taskref.borrow(); 
+            if &task.hash == code {
+                removed = true; 
+                break;
+            }
+            index += 1;
         }
-    
-        let _p : ProjectRef = self.projects.remove(code).unwrap();
-        // TODO: inconsistent tag state here.
-        Ok(())
-    }*/
+        match removed {
+        true => {
+            self.tasks.swap_remove(index);
+            return Ok(());
+        },
+        false => Err(format!("Task with code {:?} not found.", code))
+        }
+    }
 
-    fn projects_as_toml(&self) -> String {
+    fn projects_as_toml(&self) -> Result<String, String> {
         let mut pvec : Vec<Project> = Vec::new();
 
         for v in self.projects.values() {
-            let r : &ProjectRef = v;
-            let p : Project = match Rc::try_unwrap(r.clone()) {
-            Ok(val) => val.borrow().clone(),
-            Err(_) => continue,
-            };
+            let r : ProjectRef = v.clone();
+            let p : Project = r.borrow().clone();
             pvec.push(p);
         };
         let plist : ProjectList = ProjectList{project: Some(pvec)};
-        toml::to_string(&plist).unwrap()
+        match toml::to_string(&plist) {
+        Ok(s) => Ok(s),
+        Err(e) => Err(e.to_string())
+        }
     }
 
-    fn tasks_as_toml(&self) -> String {
+    fn tasks_as_toml(&self) -> Result<String, String> {
         let mut tvec : Vec<TaskRef> = Vec::new();
 
         for v in &self.tasks {
-            let r : TaskRef = v.clone();
-            tvec.push(r.clone());
+            let r : TaskRef = Rc::new(RefCell::new(v.borrow().clone()));
+            tvec.push(r);
         };
         let tlist : TaskList = TaskList{task: Some(tvec)};
-        toml::to_string(&tlist).unwrap()
+        match toml::to_string(&tlist) {
+        Ok(s) => Ok(s),
+        Err(e) => Err(e.to_string())
+        }
     }
 
     pub fn save(&self) -> Result<(), String> {
@@ -110,8 +123,8 @@ impl State {
             },
         };
 
-        let projects_toml = self.projects_as_toml();
-        let tasks_toml = self.tasks_as_toml();
+        let projects_toml : String = self.projects_as_toml()?;
+        let tasks_toml : String = self.tasks_as_toml()?;
 
         let projectsfilename = format!("{}/{}", ephemeris_dir, EPH_PROJECTNAME);
         fs::write(projectsfilename, projects_toml.as_bytes()).unwrap();

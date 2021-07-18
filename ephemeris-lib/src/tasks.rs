@@ -20,11 +20,11 @@ pub enum TaskDue {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Task {
     pub name : String,
+    pub done: bool,
     pub projectcode : Option<String>,
     pub tags : Option<Vec<String>>,
-    pub due: Option<TaskDue>,
-    pub done: bool,
     pub hash: String,
+    pub due: Option<TaskDue>,
 }
 
 

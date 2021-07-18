@@ -77,9 +77,20 @@ pub fn cmd_project(state: &mut Box<State>, cmd: &crate::Project) {
             state.save().unwrap();
         },
         ProjectSubCommand::Remove(c) => {
-            state.project_remove(&c.code).unwrap();
-            list_projects(state, &None);
-            state.save().unwrap();
+            match state.project_remove(&c.code) {
+            Ok(_) => (),
+            Err(e) => {
+                eprintln!("Error occurred: {}", e);
+                return;
+            },
+            };
+            match state.save() {
+            Ok(_) => (),
+            Err(e) => {
+                eprintln!("Error occurred: {}", e);
+                return;
+            },
+            };
         },
         ProjectSubCommand::Show(c) => {
             display_project(state, &c.code)

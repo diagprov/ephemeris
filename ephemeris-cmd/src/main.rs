@@ -30,6 +30,9 @@ enum SubCommand {
     Project(Project),
     Task(Task),
     Shell(Shell),
+    /// Validate the database to ensure there are no issues.
+    Validate,
+    //Time(TimeSubCommand),
 }
 
 /// Invoke an interactive shell. 
@@ -71,9 +74,13 @@ pub enum TaskSubCommand {
     List(TaskList),
     Add(TaskAdd),
     Show(TaskShow),
+    Remove(TaskRemove),
     /// Generate a hash shortcode for editing files by hand.
     Hash,
-    //Remove(TaskRemove),
+}
+
+#[derive(Clap)]
+pub enum TimeSubCommand {
 }
 
 
@@ -113,7 +120,6 @@ pub struct ProjectAdd {
 #[clap(name = "remove")]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct ProjectRemove {
-    #[clap(short, long)]
     code: String,
 }
 
@@ -141,6 +147,14 @@ pub struct TaskAdd {
     due: Option<String>,
 }
 
+/// Remove a given task
+#[derive(Clap)]
+#[clap(name = "task")]
+#[clap(setting = AppSettings::ColoredHelp)]
+pub struct TaskRemove {
+    hash: String,
+}
+
 /// Show a given task
 #[derive(Clap)]
 #[clap(name = "task")]
@@ -158,5 +172,6 @@ fn main() {
         SubCommand::Project(p) => cmd_project(&mut state, &p),
         SubCommand::Task(p) => cmd_tasks(&mut state, &p),
         SubCommand::Shell(_) => repl(&mut state),
+        SubCommand::Validate => println!("Validation Requested."),
     };
 }
