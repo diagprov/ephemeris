@@ -142,7 +142,7 @@ pub fn cmd_tasks(state: &mut Box<State>, cmd: &crate::Task) {
         
             state.task_add(&c.name, &c.due, &projectcode, &c.tags).unwrap();
             //list_projects(state, &None);
-            //state.save().unwrap();
+            state.save().unwrap();
         }
         TaskSubCommand::Remove(c) => {
             match state.task_remove(&c.hash) {

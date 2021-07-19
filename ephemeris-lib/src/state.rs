@@ -57,6 +57,11 @@ impl State {
             return Err(String::from(format!("Code {} does not describe a project.", projectcode)));
         }
 
+        let task = Task::new(name.to_string(), 
+            Some(projectcode.to_string()), 
+            tags.clone(),
+            due.clone())?;
+        self.tasks.push(Rc::new(RefCell::new(task))); 
 
         //self.projects.insert(code.clone(), Rc::new(RefCell::new(proj)));
         // TODO: inconsistent tag state here.

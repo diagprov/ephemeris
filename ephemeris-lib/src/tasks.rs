@@ -36,6 +36,28 @@ pub struct TaskList {
 
 impl Task {
 
+    pub fn new(name: String, 
+               projectcode: Option<String>, 
+               tags: Option<Vec<String>>,
+               _due: Option<String>,
+               )  -> Result<Task, String> {
+        Ok(Task {
+            name: name.clone(),
+            done: false,
+            projectcode: projectcode.clone(),
+            tags: tags.clone(),
+            hash: Task::genhashcode()?,
+            due: None,
+        })
+    }
+
+    pub fn mark_done(&mut self) {
+        self.done = true;
+    }
+    pub fn mark_todo(&mut self) {
+        self.done = false;
+    }
+
     pub fn genhashcode() -> Result<String, String> {
         let mut randoms: [u8; 8] = [0;8];
         match getrandom::getrandom(&mut randoms) {
