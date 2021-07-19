@@ -10,6 +10,7 @@ use std::vec::Vec;
 use crate::*;
 use crate::projects::*;
 use crate::tasks::*;
+use crate::store::*;
 
 /*pub struct TagTree {
     subtags : BTreeMap<String, Option<TagTree>>,
@@ -114,15 +115,7 @@ impl State {
 
     pub fn save(&self) -> Result<(), String> {
         
-        let ephemeris_dir = match std::env::var_os(EPHEMERIS_ENV) {
-            Some(v) => v.into_string().unwrap(),
-            None => {
-                match dirs::home_dir() {
-                    Some(h) => format!("{}/{}", h.into_os_string().into_string().unwrap(), EPHEMERIS_DIRNAME),
-                    None => return Err(String::from("Unable to locate home directory.")),
-                }
-            },
-        };
+        let ephemeris_dir = ephemeris_state_dir()?;
 
         let projects_toml : String = self.projects_as_toml()?;
         let tasks_toml : String = self.tasks_as_toml()?;
@@ -137,15 +130,7 @@ impl State {
 
     pub fn load() -> Result<Box<State>, String> {
 
-        let ephemeris_dir = match std::env::var_os(EPHEMERIS_ENV) {
-            Some(v) => v.into_string().unwrap(),
-            None => {
-                match dirs::home_dir() {
-                    Some(h) => format!("{}/{}", h.into_os_string().into_string().unwrap(), EPHEMERIS_DIRNAME),
-                    None => return Err(String::from("Unable to locate home directory.")),
-                }
-            },
-        };
+        let ephemeris_dir = ephemeris_state_dir()?;
 
         let projectsfilename = format!("{}/{}", ephemeris_dir, EPH_PROJECTNAME);
         let projects_fc = &fs::read(projectsfilename).unwrap();
