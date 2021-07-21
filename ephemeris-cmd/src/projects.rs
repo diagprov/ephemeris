@@ -6,7 +6,7 @@ use prettytable::format;
 use crate::*;
 use crate::tags::*;
 
-fn list_projects(state: &mut Box<State>, tagfilter: &Option<String>, withNoTasks: bool) {
+fn list_projects(state: &mut Box<State>, tagfilter: &Option<String>, with_no_tasks: bool) {
     let mut table = Table::new();
     table.set_titles(row![bF->"Code", bF->"Name", bF->"Tags", bF->"Task Count"]);
    
@@ -30,7 +30,7 @@ fn list_projects(state: &mut Box<State>, tagfilter: &Option<String>, withNoTasks
                 None => 0,
             };
         }
-        if withNoTasks == false && taskcount == 0 {
+        if with_no_tasks == false && taskcount == 0 {
             continue;
         }
 
@@ -131,7 +131,7 @@ pub fn cmd_project(state: &mut Box<State>, cmd: &crate::Project) {
 
     match &cmd.subcmd {
         ProjectSubCommand::List(c) => {
-            list_projects(state, &c.tag, c.withNoTasks);
+            list_projects(state, &c.tag, c.with_no_tasks);
         },
         ProjectSubCommand::Add(c) => {
             let tags = c.tags.as_ref().unwrap();

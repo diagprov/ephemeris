@@ -94,7 +94,7 @@ pub struct ProjectList {
     tag: Option<String>,
     /// Display all projects, even those with no tasks assigned.
     #[clap(long)]
-    withNoTasks : bool,
+    with_no_tasks : bool,
 }
 
 /// Show a given project
@@ -179,7 +179,14 @@ pub struct TaskShow {
 fn main() {
 
     let args = EphemerisArgs::parse();
-    let mut state : Box<State> = State::load().unwrap();
+    let mut state : Box<State> = match State::load() {
+    Ok(s) => s,
+    Err(e) => {
+        eprintln!("An error occurred loading state: {}", e);
+        eprintln!("Please run init, make sure ~/.ephemeris exists, or set EPHEMERIS_DIR");
+        return;
+    },
+    };
 
     match args.subcmd {
         SubCommand::Project(p) => cmd_project(&mut state, &p),

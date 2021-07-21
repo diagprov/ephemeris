@@ -138,8 +138,11 @@ impl State {
         let ephemeris_dir = ephemeris_state_dir()?;
 
         let projectsfilename = format!("{}/{}", ephemeris_dir, EPH_PROJECTNAME);
-        let projects_fc = &fs::read(projectsfilename).unwrap();
-        let projects_contents : String = String::from_utf8_lossy(projects_fc).parse().unwrap();
+        let projects_fc : Vec<u8> = match fs::read(projectsfilename) {
+        Ok(s) => s,
+        Err(e) => {return Err(e.to_string())},
+        };
+        let projects_contents : String = String::from_utf8_lossy(&projects_fc).parse().unwrap();
 
         let projectlist : ProjectList = match toml::from_str(&projects_contents) {
             Ok(p) => p,
@@ -208,7 +211,7 @@ impl State {
             }
 
             if taskmap.contains_key(&projectcode) {
-                let mut v : &mut Vec<TaskRef> = match taskmap.get_mut(&projectcode) {
+                let v : &mut Vec<TaskRef> = match taskmap.get_mut(&projectcode) {
                     Some(v) => v,
                     None => return Err(String::from("Error")),
                 };
