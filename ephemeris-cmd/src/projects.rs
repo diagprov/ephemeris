@@ -80,11 +80,16 @@ fn list_project_tasks(state: &mut Box<State>, projectcode: &String) {
     table.set_titles(row![bF->"Hash", 
         bF->"Deadline", bF->"S", bF->"Name", 
         bF->"Project", bF->"Tags"]);
+
+    if !state.projects.contains_key(projectcode) {
+        println!("Project code not found.");
+        return;
+    }
    
     let tasklist : &Vec<TaskRef> = match state.taskmap.get(projectcode) {
     Some(v) => v,
     None => {
-        println!("Project code not found.");
+        println!("Project {} has no tasks.", projectcode);
         return;
     },
     };
