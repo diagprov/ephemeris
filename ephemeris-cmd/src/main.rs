@@ -10,11 +10,13 @@ mod projects;
 mod repl;
 mod tags;
 mod tasks;
+mod time;
 
 
 use crate::projects::*;
 use crate::tasks::*;
 use crate::repl::*;
+use crate::time::*;
 
 /// Ephemeris is a Task and Simple Project Management utility 
 #[derive(Clap)]
@@ -30,9 +32,10 @@ enum SubCommand {
     Project(Project),
     Task(Task),
     Shell(Shell),
+    Time(Time),
     /// Validate the database to ensure there are no issues.
     Validate,
-    //Time(TimeSubCommand),
+
 }
 
 /// Invoke an interactive shell. 
@@ -60,6 +63,14 @@ pub struct Task {
     pub subcmd: TaskSubCommand,
 }
 
+#[derive(Clap)]
+#[clap(name="Ephemeris Time Tools", version = "1.0", author = "Antony Vennard <antony@vennard.ch>")]
+#[clap(setting = AppSettings::ColoredHelp)]
+pub struct Time {
+    #[clap(subcommand)]
+    pub subcmd: TimeSubCommand,
+}
+
 
 #[derive(Clap)]
 pub enum ProjectSubCommand {
@@ -75,6 +86,7 @@ pub enum TaskSubCommand {
     List(TaskList),
     Add(TaskAdd),
     Show(TaskShow),
+    Done(TaskDone),
     Remove(TaskRemove),
     /// Generate a hash shortcode for editing files by hand.
     Hash,
@@ -82,6 +94,7 @@ pub enum TaskSubCommand {
 
 #[derive(Clap)]
 pub enum TimeSubCommand {
+    Test(TimeTest),
 }
 
 
@@ -176,6 +189,22 @@ pub struct TaskShow {
     hash: String,
 }
 
+/// Show a given task
+#[derive(Clap)]
+#[clap(name = "task")]
+#[clap(setting = AppSettings::ColoredHelp)]
+pub struct TaskDone {
+    hash: String,
+}
+
+
+/// Show a given task
+#[derive(Clap)]
+#[clap(name = "time")]
+#[clap(setting = AppSettings::ColoredHelp)]
+pub struct TimeTest {
+}
+
 fn main() {
 
     let args = EphemerisArgs::parse();
@@ -192,6 +221,7 @@ fn main() {
         SubCommand::Project(p) => cmd_project(&mut state, &p),
         SubCommand::Task(p) => cmd_tasks(&mut state, &p),
         SubCommand::Shell(_) => repl(&mut state),
+        SubCommand::Time(t) => cmd_time(&mut state, &t),
         SubCommand::Validate => println!("Validation Requested."),
     };
 }

@@ -1,5 +1,5 @@
 
-use std::cell::Ref;
+use std::cell::{Ref};
 use prettytable::{Table, row, cell};
 use prettytable::format;
 use ephemeris::state::State;
@@ -114,13 +114,38 @@ fn display_task_inner(state: &Box<State>, task: Ref<Task>, _code: &String) {
 
 fn display_task(state: &mut Box<State>, code: &String) {
 
+    let mut found_displayed = false;
     for t in &state.tasks {
         let ti = t.borrow();
         if &ti.hash == code {
-            let task : Ref<Task> = ti;
+            let task = ti;
             display_task_inner(&state, task, code);
+            found_displayed = true;
             break;
         }
+    }
+
+    if !found_displayed {
+        println!("Task with code {} not found.", code);
+    }
+}
+
+fn complete_task(state: &mut Box<State>, code: &String) -> Result<(),String> {
+
+    let mut found_modified = false;
+    for t in &state.tasks {
+        let ti = t.borrow_mut();
+        if &ti.hash == code {
+            let mut task = ti;
+            task.mark_done();
+            found_modified = true;
+            break;
+        }
+    }
+    if found_modified {
+        state.save()
+    } else {
+        Err(format!("Task with code {} not found.", code))
     }
 }
 
@@ -162,6 +187,15 @@ pub fn cmd_tasks(state: &mut Box<State>, cmd: &crate::Task) {
         },
         TaskSubCommand::Show(c) => {
             display_task(state, &c.hash);         
+        },
+        TaskSubCommand::Done(c) => {
+            match complete_task(state, &c.hash) {
+            Ok(_) => display_task(state, &c.hash),
+            Err(e) => {
+                eprintln!("Error occurred: {}", e);
+                return;
+            },
+            }
         },
         TaskSubCommand::Hash => {
             match Task::genhashcode() {
