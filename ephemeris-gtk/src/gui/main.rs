@@ -1,76 +1,63 @@
 
-use relm_derive::Msg;
-use relm::{connect, Relm, Update, Widget};
-use gtk::prelude::*;
-use gtk::{Window, Inhibit, WindowType};
+use gtk::{
+    Inhibit,
+    prelude::GtkMenuItemExt,
+    prelude::MenuShellExt,
+    prelude::OrientableExt,
+    prelude::WidgetExt,
+};
+use gtk::Orientation::Vertical;
+use relm::{Relm, Widget, connect};
+use relm_derive::{Msg, widget};
 
 #[derive(Msg)]
 pub enum Msg {
-    // …
     Quit,
 }
 
-pub(crate) struct Model {
-    // …
+pub struct Model {
+    relm: Relm<MainWindow>,
 }
 
-pub(crate) struct Win {
-    // …
-    model: Model,
-    window: Window,
-}
+#[widget]
+impl Widget for MainWindow {
+    fn init_view(&mut self) {
+        let file_menu = gtk::Menu::new();
+        let file_item = gtk::MenuItem::with_label("File");
+        file_item.set_submenu(Some(&file_menu));
+        let quit_item = gtk::MenuItem::with_label("Quit");
+        self.widgets.menubar.append(&file_item);
+        file_menu.append(&quit_item);
+        self.widgets.menubar.show_all();
 
-impl Update for Win {
-    // Specify the model used for this widget.
-    type Model = Model;
-    // Specify the model parameter used to init the model.
-    type ModelParam = ();
-    // Specify the type of the messages sent to the update function.
-    type Msg = Msg;
+        connect!(quit_item, connect_activate(_), self.model.relm, Msg::Quit);
+    }
 
-    // Return the initial model.
-    fn model(_: &Relm<Self>, _: ()) -> Model {
+    fn model(relm: &Relm<Self>, _: ()) -> Model {
         Model {
+            relm: relm.clone(),
         }
     }
 
-    // The model may be updated when a message is received.
-    // Widgets may also be updated in this function.
     fn update(&mut self, event: Msg) {
         match event {
             Msg::Quit => gtk::main_quit(),
         }
     }
-}
 
-impl Widget for Win {
-    // Specify the type of the root widget.
-    type Root = Window;
-
-    // Return the root widget.
-    fn root(&self) -> Self::Root {
-        self.window.clone()
-    }
-
-    // Create the widgets.
-    fn view(relm: &Relm<Self>, model: Self::Model) -> Self {
-        // GTK+ widgets are used normally within a `Widget`.
-        let window = Window::new(WindowType::Toplevel);
-
-        // Connect the signal `delete_event` to send the `Quit` message.
-        connect!(relm, window, connect_delete_event(_, _), return (Some(Msg::Quit), Inhibit(false)));
-        // There is also a `connect!()` macro for GTK+ events that do not need a
-        // value to be returned in the callback.
-
-        window.show_all();
-
-        Win {
-            model,
-            window: window,
+    view! {
+        gtk::Window {
+            gtk::Box {
+                orientation: Vertical,
+                #[name="menubar"]
+                gtk::MenuBar {
+                },
+            },
+            delete_event(_, _) => (Msg::Quit, Inhibit(false)),
         }
     }
 }
 
 pub fn launch() {
-    Win::run(()).unwrap();
+    MainWindow::run(()).unwrap();
 }

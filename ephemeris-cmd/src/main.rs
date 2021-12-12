@@ -2,7 +2,9 @@
 extern crate clap;
 extern crate ephemeris;
 extern crate rustyline;
+extern crate human_panic;
 // simplest method of use, but sacrifices some flexibility.
+use human_panic::setup_panic;
 use clap::{AppSettings, Clap};
 use ephemeris::state::State;
 
@@ -154,7 +156,7 @@ pub struct ProjectRemove {
 #[clap(name = "list")]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct TaskList {
-    #[clap(long)]
+    //#[clap(long)]
     tag: Option<String>,
 }
 
@@ -206,6 +208,7 @@ pub struct TimeTest {
 }
 
 fn main() {
+    setup_panic!();
 
     let args = EphemerisArgs::parse();
     let mut state : Box<State> = match State::load() {
