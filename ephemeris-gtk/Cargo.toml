@@ -7,6 +7,6 @@ edition = "2018"
 
 [dependencies]
 ephemeris = {path = "../ephemeris-lib"}
-[dependencies.gtk]
-version = "0.14.0"
-features = ["v3_24"]
+gtk = "^0.14.0"
+relm = "^0.22.0"
+relm-derive = "^0.22.0"
