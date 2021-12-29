@@ -3,9 +3,13 @@
 extern crate ephemeris;
 extern crate rustyline;
 extern crate human_panic;
+
+
+use std::io;
 // simplest method of use, but sacrifices some flexibility.
 use human_panic::setup_panic;
-use clap::{AppSettings, Args, Parser, Subcommand};
+use clap::{AppSettings, Args, IntoApp, Parser, Subcommand};
+use clap_generate::{generate, Generator, Shell as ClapShell};
 use ephemeris::state::State;
 
 mod projects;
@@ -23,7 +27,6 @@ use crate::time::*;
 /// Ephemeris is a Task and Simple Project Management utility 
 #[derive(Parser)]
 #[clap(name="Ephemeris", version = "1.0", author = "Antony Vennard <antony@vennard.ch>")]
-#[clap(setting(AppSettings::ColoredHelp))]
 struct EphemerisArgs {
     #[clap(subcommand)]
     subcmd: Commands,
@@ -35,6 +38,7 @@ enum Commands {
     Task(Task),
     Shell(Shell),
     Time(Time),
+    Completion(Completion),
     /// Validate the database to ensure there are no issues.
     Validate,
 
@@ -43,14 +47,12 @@ enum Commands {
 /// Invoke an interactive shell. 
 #[derive(Args)]
 #[clap(name="Ephemeris Project Management", version = "1.0", author = "Antony Vennard <antony@vennard.ch>")]
-#[clap(setting = AppSettings::ColoredHelp)]
 pub struct Shell {
 }
 
 /// Modify or view Projects
 #[derive(Args)]
 #[clap(name="Ephemeris Project Management", version = "1.0", author = "Antony Vennard <antony@vennard.ch>")]
-#[clap(setting = AppSettings::ColoredHelp)]
 pub struct Project {
     #[clap(subcommand)]
     pub subcmd: ProjectSubCommand,
@@ -59,7 +61,6 @@ pub struct Project {
 /// Modify or view Tasks
 #[derive(Args)]
 #[clap(name="Ephemeris Task Management", version = "1.0", author = "Antony Vennard <antony@vennard.ch>")]
-#[clap(setting = AppSettings::ColoredHelp)]
 pub struct Task {
     #[clap(subcommand)]
     pub subcmd: TaskSubCommand,
@@ -67,12 +68,24 @@ pub struct Task {
 
 #[derive(Args)]
 #[clap(name="Ephemeris Time Tools", version = "1.0", author = "Antony Vennard <antony@vennard.ch>")]
-#[clap(setting = AppSettings::ColoredHelp)]
 pub struct Time {
     #[clap(subcommand)]
     pub subcmd: TimeSubCommand,
 }
 
+#[derive(Args)]
+#[clap(name="Ephemeris Completion Scripts", version = "1.0", author = "Antony Vennard <antony@vennard.ch>")]
+pub struct Completion {
+    #[clap(subcommand)]
+    pub subcmd: CompletionSubCommand,
+}
+
+#[derive(Subcommand)]
+pub enum CompletionSubCommand {
+    Bash,
+    Zsh,
+    Psh,
+}
 
 #[derive(Subcommand)]
 pub enum ProjectSubCommand {
@@ -103,7 +116,6 @@ pub enum TimeSubCommand {
 /// List Projects
 #[derive(Args)]
 #[clap(name = "list")]
-#[clap(setting = AppSettings::ColoredHelp)]
 pub struct ProjectList {
     #[clap(long)]
     tag: Option<String>,
@@ -115,7 +127,6 @@ pub struct ProjectList {
 /// Show a given project
 #[derive(Args)]
 #[clap(name = "project")]
-#[clap(setting = AppSettings::ColoredHelp)]
 pub struct ProjectShow {
     code: String,
 }
@@ -123,7 +134,6 @@ pub struct ProjectShow {
 /// Show a given project
 #[derive(Args)]
 #[clap(name = "project")]
-#[clap(setting = AppSettings::ColoredHelp)]
 pub struct ProjectTasks {
     code: String,
 }
@@ -133,7 +143,6 @@ pub struct ProjectTasks {
 /// Add a new Project
 #[derive(Args)]
 #[clap(name = "add")]
-#[clap(setting = AppSettings::ColoredHelp)]
 pub struct ProjectAdd {
     #[clap(short, long)]
     code: String,
@@ -146,7 +155,6 @@ pub struct ProjectAdd {
 /// Remove a Project
 #[derive(Args)]
 #[clap(name = "remove")]
-#[clap(setting = AppSettings::ColoredHelp)]
 pub struct ProjectRemove {
     code: String,
 }
@@ -154,7 +162,6 @@ pub struct ProjectRemove {
 /// List Tasks
 #[derive(Args)]
 #[clap(name = "list")]
-#[clap(setting = AppSettings::ColoredHelp)]
 pub struct TaskList {
     //#[clap(long)]
     tag: Option<String>,
@@ -163,7 +170,6 @@ pub struct TaskList {
 /// Add a new Task
 #[derive(Args)]
 #[clap(name = "list")]
-#[clap(setting = AppSettings::ColoredHelp)]
 pub struct TaskAdd {
     #[clap(short, long)]
     projectcode: Option<String>,
@@ -178,7 +184,6 @@ pub struct TaskAdd {
 /// Remove a given task
 #[derive(Args)]
 #[clap(name = "task")]
-#[clap(setting = AppSettings::ColoredHelp)]
 pub struct TaskRemove {
     hash: String,
 }
@@ -186,7 +191,6 @@ pub struct TaskRemove {
 /// Show a given task
 #[derive(Args)]
 #[clap(name = "task")]
-#[clap(setting = AppSettings::ColoredHelp)]
 pub struct TaskShow {
     hash: String,
 }
@@ -194,7 +198,6 @@ pub struct TaskShow {
 /// Show a given task
 #[derive(Args)]
 #[clap(name = "task")]
-#[clap(setting = AppSettings::ColoredHelp)]
 pub struct TaskDone {
     hash: String,
 }
@@ -203,7 +206,6 @@ pub struct TaskDone {
 /// Show a given task
 #[derive(Args)]
 #[clap(name = "time")]
-#[clap(setting = AppSettings::ColoredHelp)]
 pub struct TimeTest {
 }
 
@@ -211,6 +213,7 @@ fn main() {
     setup_panic!();
 
     let args = EphemerisArgs::parse();
+    let mut app = EphemerisArgs::into_app();
     let mut state : Box<State> = match State::load() {
     Ok(s) => s,
     Err(e) => {
@@ -225,6 +228,16 @@ fn main() {
         Commands::Task(p) => cmd_tasks(&mut state, &p),
         Commands::Shell(_) => repl(&mut state),
         Commands::Time(t) => cmd_time(&mut state, &t),
+        Commands::Completion(s) => {
+            match s.subcmd {
+            CompletionSubCommand::Bash =>
+                generate(ClapShell::Bash, &mut app, "Ephemeris", &mut io::stdout()),
+            CompletionSubCommand::Zsh =>
+                generate(ClapShell::Zsh, &mut app, "Ephemeris", &mut io::stdout()),
+            CompletionSubCommand::Psh =>
+                generate(ClapShell::PowerShell, &mut app, "Ephemeris", &mut io::stdout())
+            }
+        },
         Commands::Validate => println!("Validation Requested."),
     };
 }
