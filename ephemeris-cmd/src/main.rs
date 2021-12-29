@@ -1,11 +1,11 @@
 
-extern crate clap;
+#![macro_use]
 extern crate ephemeris;
 extern crate rustyline;
 extern crate human_panic;
 // simplest method of use, but sacrifices some flexibility.
 use human_panic::setup_panic;
-use clap::{AppSettings, Clap};
+use clap::{AppSettings, Args, Parser, Subcommand};
 use ephemeris::state::State;
 
 mod projects;
@@ -21,16 +21,16 @@ use crate::repl::*;
 use crate::time::*;
 
 /// Ephemeris is a Task and Simple Project Management utility 
-#[derive(Clap)]
+#[derive(Parser)]
 #[clap(name="Ephemeris", version = "1.0", author = "Antony Vennard <antony@vennard.ch>")]
-#[clap(setting = AppSettings::ColoredHelp)]
+#[clap(setting(AppSettings::ColoredHelp))]
 struct EphemerisArgs {
     #[clap(subcommand)]
-    subcmd: SubCommand,
+    subcmd: Commands,
 }
 
-#[derive(Clap)]
-enum SubCommand {
+#[derive(Subcommand)]
+enum Commands {
     Project(Project),
     Task(Task),
     Shell(Shell),
@@ -41,14 +41,14 @@ enum SubCommand {
 }
 
 /// Invoke an interactive shell. 
-#[derive(Clap)]
+#[derive(Args)]
 #[clap(name="Ephemeris Project Management", version = "1.0", author = "Antony Vennard <antony@vennard.ch>")]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct Shell {
 }
 
 /// Modify or view Projects
-#[derive(Clap)]
+#[derive(Args)]
 #[clap(name="Ephemeris Project Management", version = "1.0", author = "Antony Vennard <antony@vennard.ch>")]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct Project {
@@ -57,7 +57,7 @@ pub struct Project {
 }
 
 /// Modify or view Tasks
-#[derive(Clap)]
+#[derive(Args)]
 #[clap(name="Ephemeris Task Management", version = "1.0", author = "Antony Vennard <antony@vennard.ch>")]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct Task {
@@ -65,7 +65,7 @@ pub struct Task {
     pub subcmd: TaskSubCommand,
 }
 
-#[derive(Clap)]
+#[derive(Args)]
 #[clap(name="Ephemeris Time Tools", version = "1.0", author = "Antony Vennard <antony@vennard.ch>")]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct Time {
@@ -74,7 +74,7 @@ pub struct Time {
 }
 
 
-#[derive(Clap)]
+#[derive(Subcommand)]
 pub enum ProjectSubCommand {
     List(ProjectList),
     Add(ProjectAdd),
@@ -83,7 +83,7 @@ pub enum ProjectSubCommand {
     Tasks(ProjectTasks),
 }
 
-#[derive(Clap)]
+#[derive(Subcommand)]
 pub enum TaskSubCommand {
     List(TaskList),
     Add(TaskAdd),
@@ -94,14 +94,14 @@ pub enum TaskSubCommand {
     Hash,
 }
 
-#[derive(Clap)]
+#[derive(Subcommand)]
 pub enum TimeSubCommand {
     Test(TimeTest),
 }
 
 
 /// List Projects
-#[derive(Clap)]
+#[derive(Args)]
 #[clap(name = "list")]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct ProjectList {
@@ -113,7 +113,7 @@ pub struct ProjectList {
 }
 
 /// Show a given project
-#[derive(Clap)]
+#[derive(Args)]
 #[clap(name = "project")]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct ProjectShow {
@@ -121,7 +121,7 @@ pub struct ProjectShow {
 }
 
 /// Show a given project
-#[derive(Clap)]
+#[derive(Args)]
 #[clap(name = "project")]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct ProjectTasks {
@@ -131,7 +131,7 @@ pub struct ProjectTasks {
 
 
 /// Add a new Project
-#[derive(Clap)]
+#[derive(Args)]
 #[clap(name = "add")]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct ProjectAdd {
@@ -144,7 +144,7 @@ pub struct ProjectAdd {
 }
 
 /// Remove a Project
-#[derive(Clap)]
+#[derive(Args)]
 #[clap(name = "remove")]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct ProjectRemove {
@@ -152,7 +152,7 @@ pub struct ProjectRemove {
 }
 
 /// List Tasks
-#[derive(Clap)]
+#[derive(Args)]
 #[clap(name = "list")]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct TaskList {
@@ -161,7 +161,7 @@ pub struct TaskList {
 }
 
 /// Add a new Task
-#[derive(Clap)]
+#[derive(Args)]
 #[clap(name = "list")]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct TaskAdd {
@@ -176,7 +176,7 @@ pub struct TaskAdd {
 }
 
 /// Remove a given task
-#[derive(Clap)]
+#[derive(Args)]
 #[clap(name = "task")]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct TaskRemove {
@@ -184,7 +184,7 @@ pub struct TaskRemove {
 }
 
 /// Show a given task
-#[derive(Clap)]
+#[derive(Args)]
 #[clap(name = "task")]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct TaskShow {
@@ -192,7 +192,7 @@ pub struct TaskShow {
 }
 
 /// Show a given task
-#[derive(Clap)]
+#[derive(Args)]
 #[clap(name = "task")]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct TaskDone {
@@ -201,7 +201,7 @@ pub struct TaskDone {
 
 
 /// Show a given task
-#[derive(Clap)]
+#[derive(Args)]
 #[clap(name = "time")]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub struct TimeTest {
@@ -221,10 +221,10 @@ fn main() {
     };
 
     match args.subcmd {
-        SubCommand::Project(p) => cmd_project(&mut state, &p),
-        SubCommand::Task(p) => cmd_tasks(&mut state, &p),
-        SubCommand::Shell(_) => repl(&mut state),
-        SubCommand::Time(t) => cmd_time(&mut state, &t),
-        SubCommand::Validate => println!("Validation Requested."),
+        Commands::Project(p) => cmd_project(&mut state, &p),
+        Commands::Task(p) => cmd_tasks(&mut state, &p),
+        Commands::Shell(_) => repl(&mut state),
+        Commands::Time(t) => cmd_time(&mut state, &t),
+        Commands::Validate => println!("Validation Requested."),
     };
 }
