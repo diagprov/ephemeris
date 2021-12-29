@@ -9,7 +9,7 @@ use std::io;
 // simplest method of use, but sacrifices some flexibility.
 use human_panic::setup_panic;
 use clap::{AppSettings, Args, IntoApp, Parser, Subcommand};
-use clap_generate::{generate, Generator, Shell as ClapShell};
+use clap_generate::{generate, Shell as ClapShell}; // Generator removed
 use ephemeris::state::State;
 
 mod projects;
@@ -38,6 +38,7 @@ enum Commands {
     Task(Task),
     Shell(Shell),
     Time(Time),
+    #[clap(setting(AppSettings::Hidden))]
     Completion(Completion),
     /// Validate the database to ensure there are no issues.
     Validate,
@@ -66,6 +67,7 @@ pub struct Task {
     pub subcmd: TaskSubCommand,
 }
 
+/// Time and Timezone Utilities
 #[derive(Args)]
 #[clap(name="Ephemeris Time Tools", version = "1.0", author = "Antony Vennard <antony@vennard.ch>")]
 pub struct Time {
@@ -117,6 +119,7 @@ pub enum TimeSubCommand {
 #[derive(Args)]
 #[clap(name = "list")]
 pub struct ProjectList {
+    /// List projects matching this tag only
     #[clap(long)]
     tag: Option<String>,
     /// Display all projects, even those with no tasks assigned.
@@ -128,6 +131,7 @@ pub struct ProjectList {
 #[derive(Args)]
 #[clap(name = "project")]
 pub struct ProjectShow {
+    /// The code identifying the project
     code: String,
 }
 
@@ -135,6 +139,7 @@ pub struct ProjectShow {
 #[derive(Args)]
 #[clap(name = "project")]
 pub struct ProjectTasks {
+    /// The code identifying the project
     code: String,
 }
 
@@ -144,10 +149,13 @@ pub struct ProjectTasks {
 #[derive(Args)]
 #[clap(name = "add")]
 pub struct ProjectAdd {
+    /// Set the short project code without spaces.
     #[clap(short, long)]
     code: String,
+    /// Set the project name
     #[clap(short, long)]
     name: String,
+    /// Choose tags that apply to the project.
     #[clap(short, long)]
     tags: Option<Vec<String>>,
 }
@@ -156,6 +164,7 @@ pub struct ProjectAdd {
 #[derive(Args)]
 #[clap(name = "remove")]
 pub struct ProjectRemove {
+    /// The code identifying the project
     code: String,
 }
 
@@ -164,6 +173,7 @@ pub struct ProjectRemove {
 #[clap(name = "list")]
 pub struct TaskList {
     //#[clap(long)]
+    /// List tags matching this tag
     tag: Option<String>,
 }
 
@@ -171,12 +181,16 @@ pub struct TaskList {
 #[derive(Args)]
 #[clap(name = "list")]
 pub struct TaskAdd {
+    /// Specify the short code for the task
     #[clap(short, long)]
     projectcode: Option<String>,
+    /// Specify the task itself
     #[clap(short, long)]
     name: String,
+    /// Specify zero or more tags for the task
     #[clap(short, long)]
     tags: Option<Vec<String>>,
+    /// Set a due date for the task
     #[clap(short, long)]
     due: Option<String>,
 }
@@ -185,6 +199,7 @@ pub struct TaskAdd {
 #[derive(Args)]
 #[clap(name = "task")]
 pub struct TaskRemove {
+    /// The hash identifying the task
     hash: String,
 }
 
@@ -192,6 +207,7 @@ pub struct TaskRemove {
 #[derive(Args)]
 #[clap(name = "task")]
 pub struct TaskShow {
+    /// The hash identifying the task
     hash: String,
 }
 
@@ -199,6 +215,7 @@ pub struct TaskShow {
 #[derive(Args)]
 #[clap(name = "task")]
 pub struct TaskDone {
+    /// The hash identifying the task
     hash: String,
 }
 
