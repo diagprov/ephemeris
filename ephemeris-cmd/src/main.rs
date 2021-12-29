@@ -231,11 +231,11 @@ fn main() {
         Commands::Completion(s) => {
             match s.subcmd {
             CompletionSubCommand::Bash =>
-                generate(ClapShell::Bash, &mut app, "Ephemeris", &mut io::stdout()),
+                generate(ClapShell::Bash, &mut app, "ephemeris", &mut io::stdout()),
             CompletionSubCommand::Zsh =>
-                generate(ClapShell::Zsh, &mut app, "Ephemeris", &mut io::stdout()),
+                generate(ClapShell::Zsh, &mut app, "ephemeris", &mut io::stdout()),
             CompletionSubCommand::Psh =>
-                generate(ClapShell::PowerShell, &mut app, "Ephemeris", &mut io::stdout())
+                generate(ClapShell::PowerShell, &mut app, "ephemeris", &mut io::stdout())
             }
         },
         Commands::Validate => println!("Validation Requested."),
