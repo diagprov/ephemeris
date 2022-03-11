@@ -60,7 +60,8 @@ impl State {
         let task = Task::new(name.to_string(), 
             Some(projectcode.to_string()), 
             tags.clone(),
-            due.clone())?;
+            due.clone(),
+            0)?;
         self.tasks.push(Rc::new(RefCell::new(task))); 
 
         //self.projects.insert(code.clone(), Rc::new(RefCell::new(proj)));

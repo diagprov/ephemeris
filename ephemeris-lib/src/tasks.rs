@@ -8,8 +8,6 @@ use serde_derive::{Serialize, Deserialize};
 
 pub type TaskRef = Rc<RefCell<Task>>;
 
-
-
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(tag = "type", content = "when")]
 pub enum TaskDue {
@@ -25,6 +23,7 @@ pub struct Task {
     pub tags : Option<Vec<String>>,
     pub hash: String,
     pub due: Option<TaskDue>,
+    pub priority: u16,
 }
 
 
@@ -33,13 +32,13 @@ pub struct TaskList {
     pub task : Option<Vec<TaskRef>>,
 }
 
-
 impl Task {
 
     pub fn new(name: String, 
                projectcode: Option<String>, 
                tags: Option<Vec<String>>,
                _due: Option<String>,
+               priority: u16,
                )  -> Result<Task, String> {
         Ok(Task {
             name: name.clone(),
@@ -48,6 +47,7 @@ impl Task {
             tags: tags.clone(),
             hash: Task::genhashcode()?,
             due: None,
+            priority: priority,
         })
     }
 

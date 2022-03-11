@@ -11,6 +11,7 @@ pub struct Project {
     pub code : String,
     pub name : String,
     pub tags : Option<Vec<String>>,
+    pub done : bool,
     // FEATURE: do we support project nesting like this?
     // pub projects: Option<Vec<ProjectRef>>,
 }
@@ -40,8 +41,16 @@ impl Project {
             code: code.clone(),
             name: name.clone(),
             tags: Some(tags.clone()),
+            done: false,
             //projects: None,
         })
+    }
+
+    pub fn mark_done(&mut self) {
+        self.done = true;
+    }
+    pub fn mark_todo(&mut self) {
+        self.done = false;
     }
 
 }
