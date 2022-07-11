@@ -112,6 +112,7 @@ pub enum TaskSubCommand {
 #[derive(Subcommand)]
 pub enum TimeSubCommand {
     Test(TimeTest),
+    Local(TimeLocal),
 }
 
 
@@ -219,12 +220,15 @@ pub struct TaskDone {
     hash: String,
 }
 
-
-/// Show a given task
+/// Display Local Timezone Information
 #[derive(Args)]
 #[clap(name = "time")]
-pub struct TimeTest {
-}
+pub struct TimeLocal {}
+
+/// Time test command (Remove)
+#[derive(Args)]
+#[clap(name = "time")]
+pub struct TimeTest {}
 
 fn main() {
     setup_panic!();

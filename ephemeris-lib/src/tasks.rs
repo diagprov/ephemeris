@@ -23,7 +23,7 @@ pub struct Task {
     pub tags : Option<Vec<String>>,
     pub hash: String,
     pub due: Option<TaskDue>,
-    pub priority: u16,
+    pub priority: Option<u16>,
 }
 
 
@@ -38,7 +38,7 @@ impl Task {
                projectcode: Option<String>, 
                tags: Option<Vec<String>>,
                _due: Option<String>,
-               priority: u16,
+               priority: Option<u16>,
                )  -> Result<Task, String> {
         Ok(Task {
             name: name.clone(),

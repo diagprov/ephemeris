@@ -11,8 +11,8 @@ path = "src/main.rs"
 
 
 [dependencies]
-chrono = {version = "^0.4.19", features=["serde"]}
-chrono-tz = "^0.5.3"
+tz-rs = "^0.6.11"
+tzdb = "^0.2.7"
 clap = {version = "3.2.8", features = ["derive","suggestions", "color" ]}
 clap_complete = {version = "3.2.3"}
 proc-macro2 = {version = "1.0.36"}

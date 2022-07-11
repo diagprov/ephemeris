@@ -61,7 +61,7 @@ impl State {
             Some(projectcode.to_string()), 
             tags.clone(),
             due.clone(),
-            0)?;
+            Some(0u16))?;
         self.tasks.push(Rc::new(RefCell::new(task))); 
 
         //self.projects.insert(code.clone(), Rc::new(RefCell::new(proj)));
