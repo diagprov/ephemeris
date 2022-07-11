@@ -13,8 +13,8 @@ path = "src/main.rs"
 [dependencies]
 chrono = {version = "^0.4.19", features=["serde"]}
 chrono-tz = "^0.5.3"
-clap = {version = "3.0.0-rc.9", features = ["derive","suggestions", "color" ]}
-clap_generate = {version = "3.0.0-rc.9"}
+clap = {version = "3.2.8", features = ["derive","suggestions", "color" ]}
+clap_complete = {version = "3.2.3"}
 proc-macro2 = {version = "1.0.36"}
 prettytable-rs = "^0.8"
 rustyline = "8.2.0"

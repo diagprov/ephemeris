@@ -9,7 +9,7 @@ use std::io;
 // simplest method of use, but sacrifices some flexibility.
 use human_panic::setup_panic;
 use clap::{AppSettings, Args, IntoApp, Parser, Subcommand};
-use clap_generate::{generate, Shell as ClapShell}; // Generator removed
+use clap_complete::{generate, Shell as ClapShell}; // Generator removed
 use ephemeris::state::State;
 
 mod projects;
