@@ -74,7 +74,7 @@ fn display_project(state: &mut Box<State>, code: &String) {
     table.print_tty(true);
 }
 
-fn list_project_tasks(state: &mut Box<State>, projectcode: &String) {
+fn list_project_tasks(state: &mut Box<State>, projectcode: &String, show_done: bool) {
     
     let mut table = Table::new();
     table.set_titles(row![bF->"Hash", 
@@ -98,6 +98,12 @@ fn list_project_tasks(state: &mut Box<State>, projectcode: &String) {
     table.set_format(*format::consts::FORMAT_CLEAN);//BOX_CHARS);
     for taski in tasklist {
         let task = taski.borrow();
+        
+        // if we are not showing done tasks and the task is done, skip
+        if !show_done && task.done == true { 
+            continue; 
+        }
+
         let tagstr : String = match &task.tags {
         Some(tv) => {
             tag_to_string(&tv)                   
@@ -118,6 +124,7 @@ fn list_project_tasks(state: &mut Box<State>, projectcode: &String) {
         },
         None => String::from("Not set"),
         };
+        
         let status = match task.done {
             true => String::from("✓"),
             false => String::from("𐄂"),
@@ -169,7 +176,7 @@ pub fn cmd_project(state: &mut Box<State>, cmd: &crate::Project) {
             display_project(state, &c.code)
         },
         ProjectSubCommand::Tasks(c) => {
-            list_project_tasks(state, &c.code)
+            list_project_tasks(state, &c.code, c.done)
         }
     }
 }

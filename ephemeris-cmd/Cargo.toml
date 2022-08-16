@@ -15,8 +15,8 @@ tz-rs = "^0.6.11"
 tzdb = "^0.2.7"
 clap = {version = "3.2.8", features = ["derive","suggestions", "color" ]}
 clap_complete = {version = "3.2.3"}
-proc-macro2 = {version = "1.0.36"}
+proc-macro2 = {version = "1.0.40"}
 prettytable-rs = "^0.8"
-rustyline = "8.2.0"
+rustyline = "9.1.2"
 human-panic = "^1.0.3"
 ephemeris = {path = "../ephemeris-lib"}

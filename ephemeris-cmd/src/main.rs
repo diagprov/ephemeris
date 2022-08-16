@@ -142,6 +142,9 @@ pub struct ProjectShow {
 pub struct ProjectTasks {
     /// The code identifying the project
     code: String,
+    /// Also show complete tasks
+    #[clap(short, long)]
+    done: bool,
 }
 
 
@@ -176,6 +179,9 @@ pub struct TaskList {
     //#[clap(long)]
     /// List tags matching this tag
     tag: Option<String>,
+    /// Also show completed tasks
+    #[clap(short, long)]
+    done: bool,
 }
 
 /// Add a new Task
@@ -212,7 +218,7 @@ pub struct TaskShow {
     hash: String,
 }
 
-/// Show a given task
+/// Mark a given task done
 #[derive(Args)]
 #[clap(name = "task")]
 pub struct TaskDone {

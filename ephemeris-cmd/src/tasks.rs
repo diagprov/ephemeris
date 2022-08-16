@@ -7,7 +7,7 @@ use ephemeris::tasks::{Task, TaskDue};
 use crate::{TaskSubCommand};
 use crate::tags::*;
 
-pub fn list_tasks(state: &mut Box<State>, tagfilter: &Option<String>) {
+pub fn list_tasks(state: &mut Box<State>, tagfilter: &Option<String>, show_done: bool) {
     
     let mut table = Table::new();
     table.set_titles(row![bF->"Hash", 
@@ -18,6 +18,13 @@ pub fn list_tasks(state: &mut Box<State>, tagfilter: &Option<String>) {
     table.set_format(*format::consts::FORMAT_CLEAN);//BOX_CHARS);
     for taski in &state.tasks {
         let task = taski.borrow();
+        
+        // if we are not showing done tasks and the task is done, skip
+        // doesn't matter if it matches the tag filter here.
+        if !show_done && task.done == true { 
+            continue; 
+        }
+
         match tagfilter {
         Some(t) => {
             let taglist = task.tags.as_ref().unwrap();
@@ -152,7 +159,7 @@ fn complete_task(state: &mut Box<State>, code: &String) -> Result<(),String> {
 pub fn cmd_tasks(state: &mut Box<State>, cmd: &crate::Task) {
     match &cmd.subcmd {
         TaskSubCommand::List(c) => {
-            list_tasks(state, &c.tag);
+            list_tasks(state, &c.tag, c.done);
         },
         TaskSubCommand::Add(c) => {
             let tags = c.tags.as_ref().unwrap();
